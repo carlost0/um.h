@@ -3,7 +3,7 @@
 
 int main(void) {
     usb contents;
-    usv tschüss, hallo;
+    usv tschüss, hallo, zahlen;
     usb hello, world;
     char *input;
 
@@ -11,20 +11,21 @@ int main(void) {
     contents.cap   = 0;
     contents.data  = NULL;
 
-    tschüss = usv_from_cstr("Hallo Tschüss 123");
-    hallo = usv_tok(&tschüss, " ");
+    zahlen = usv_from_cstr("Hallo Tschüss 123");
+    hallo = usv_tok(&zahlen, " ");
+    tschüss = usv_tok(&zahlen, " ");
 
-    ulog_printf(ULOG_INFO, USV_FMT"\n", USV_ARG(hallo));
-    ulog_printf(ULOG_INFO, USV_FMT"\n", USV_ARG(tschüss));
+    ulog_printf(ULOG_INFO, USV_FMT, USV_ARG(hallo));
+    ulog_printf(ULOG_INFO, USV_FMT, USV_ARG(tschüss));
+    ulog_printf(ULOG_INFO, USV_FMT, USV_ARG(zahlen));
 
     if (!usb_from_file("Makefile", &contents)) {
         ulog_print(ULOG_ERROR, "unable to open file");
         return 1;
     }
 
-    ulog_printf(ULOG_INFO, USV_FMT, USV_ARG(contents));
-
-    printf("%zu\n", contents.size);
+    ulog_printf(ULOG_INFO, "contents =>\n" USV_FMT, USV_ARG(contents));
+    ulog_printf(ULOG_INFO, "size => %zu", contents.size);
 
     hello.size  = 0;
     hello.cap   = 0;
@@ -44,8 +45,10 @@ int main(void) {
     free(hello.data);
     free(world.data);
 
+    printf("wie heißt du? ");
+    fflush(stdout);
     input = ucstr_read_stream_until(stdin, "\n");
-    ulog_printf(ULOG_INFO, "input: %s", input);
+    ulog_printf(ULOG_INFO, "hallo %s", input);
 
     free(input);
     return 0;

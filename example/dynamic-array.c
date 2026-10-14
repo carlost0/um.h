@@ -2,13 +2,16 @@
 #include "../um.h"
 
 int main(void) {
-    f64 *arr;
+    size_t *arr;
     size_t i;
-    arr = uda_new(sizeof(f64));
+    arr = uda_new(sizeof(size_t));
 
-    for (i = 0; i < 500; ++i) {
-        uda_append(arr,  i);
-        printf("arr[%zu] = %f\n", i, arr[i]);
+    uda_append(arr, 0);
+    uda_append(arr, 1);
+
+    for (i = 1; i < 50; ++i) {
+        uda_append(arr,  arr[i] + arr[i - 1]);
+        ulog_printf(ULOG_INFO, "fib(%zu) = %zu", i, arr[i]);
     }
 
     uda_destroy(arr);

@@ -1,6 +1,12 @@
 # um.h
-um.h is a single header library providing some utilities the c standard library
+um.h is a single header library providing some utilities (that may even work on windows) the c standard library
 doesn't have like string views, arena allocators or dynamic arrays.
+
+# getting started
+
+just copy the file into your project and include it like any other single header library.
+
+`wget https://raw.githubusercontent.com/carlost0/um.h/refs/heads/main/um.h`
 
 # todo
 - hashtables

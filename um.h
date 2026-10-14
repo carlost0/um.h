@@ -63,7 +63,6 @@
 #include <stdio.h>
 
 #include <assert.h>
-#include <limits.h>
 
 #include <string.h>
 #include <ctype.h>
@@ -88,9 +87,13 @@ typedef unsigned long  u64;
 #define UMDEF static
 #endif /* UMDEF */
 
+typedef enum { true = 1, false = 0 } bool;
+
 #else 
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <limits.h>
 
 typedef int8_t  i8;
 typedef int16_t i16;
@@ -109,11 +112,6 @@ typedef uint64_t u64;
 #endif /* UMDEF */
 
 #endif
-
-typedef u8 ubool;
-
-#define utrue 1
-#define ufalse 0
 
 typedef float  f32;
 typedef double f64;
@@ -231,7 +229,7 @@ typedef enum {
 
 UMDEF void *uda_new(size_t typesize);
 UMDEF void *uda_reserve(void *da, size_t n);
-UMDEF ubool uda_destroy(void *da);
+UMDEF bool uda_destroy(void *da);
 
 #ifndef uda_size
 #define uda_size(arr) (((udah *) (arr) - 1)->size)
@@ -251,7 +249,7 @@ UMDEF ubool uda_destroy(void *da);
         (arr) = uda_reserve((arr), uda_cap(arr) * 2); \
     } \
     arr[uda_size(arr)++] = (v); \
-} while (0);
+} while (0)
 #endif /* uda_append */
 
 #ifndef uda_pop
@@ -270,7 +268,7 @@ UMDEF usb    usb_from_cstr(char *cstr);
 UMDEF usv    usv_from_cstr(const char *cstr);
 UMDEF usv    usv_from_usb(const usb b);
 
-UMDEF ubool  usb_from_file(const char *filename, usb *b);
+UMDEF bool  usb_from_file(const char *filename, usb *b);
 UMDEF void   usb_read_stream_until(FILE *stream, usb *b, const char *delims);
 
 UMDEF char  *ucstr_from_file(const char *filename);
@@ -287,8 +285,8 @@ UMDEF size_t usv_trim_left(usv *v);
 UMDEF size_t usv_trim_right(usv *v);
 UMDEF size_t usv_trim(usv *v);
 UMDEF int    usv_cmp(usv a, usv b);
-UMDEF ubool  usv_eq(usv a, usv b);
-UMDEF ubool  usv_isnum(usv v);
+UMDEF bool  usv_eq(usv a, usv b);
+UMDEF bool  usv_isnum(usv v);
 UMDEF i32    usv_to_i32(usv v);
 UMDEF usv    usv_tok(usv *v, const char *delims);
 
@@ -324,11 +322,11 @@ UMDEF void  uar_destroy(uar *a);
 #define ULOG_DEFAULT_STREAM stderr
 #endif /* ULOG_DEFAULT_STREAM */
 
-UMDEF ubool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...);
-UMDEF ubool ulog_printf(ulog_level level, const char *fmt, ...);
+UMDEF bool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...);
+UMDEF bool ulog_printf(ulog_level level, const char *fmt, ...);
 
-UMDEF ubool ulog_fprint(FILE *stream, ulog_level level, const char *msg);
-UMDEF ubool ulog_print(ulog_level level, const char *msg);
+UMDEF bool ulog_fprint(FILE *stream, ulog_level level, const char *msg);
+UMDEF bool ulog_print(ulog_level level, const char *msg);
 
 #endif /* _UM_H */
 
@@ -390,18 +388,18 @@ UMDEF void *uda_reserve(void *arr, size_t n) {
     return arr;
 }
 
-UMDEF ubool uda_destroy(void *arr) {
+UMDEF bool uda_destroy(void *arr) {
     udah *h;
 
     if (!arr) {
-        return ufalse;
+        return false;
     }
     
     h = (udah*) arr - 1;
 
     free(h);
     
-    return utrue;
+    return true;
 }
 
 
@@ -561,21 +559,21 @@ UMDEF char *ucstr_read_stream_until(FILE *stream, const char *delims) {
     return buf;
 }
 
-UMDEF ubool usb_from_file(const char *filename, usb *b) {
+UMDEF bool usb_from_file(const char *filename, usb *b) {
     char *buf;
 
     buf = ucstr_from_file(filename);
 
     if (!buf) {
         UM_FREE(buf);
-        return ufalse;
+        return false;
     }
 
     b->data = buf;
     b->size = strlen(buf);
     b->cap = b->size;
 
-    return utrue;
+    return true;
 }
 
 UMDEF void usb_read_stream_until(FILE *stream, usb *b, const char *delims) {
@@ -586,14 +584,16 @@ UMDEF void usb_read_stream_until(FILE *stream, usb *b, const char *delims) {
     usb_append_cstr(b, buf);
 }
 
-UMDEF ubool usv_isnum(usv v) {
+UMDEF bool usv_isnum(usv v) {
     size_t i;
 
     for (i = 0; i < v.size; ++i) {
-        if (!isdigit(v.data[i])) return ufalse;
+        if (!isdigit(v.data[i])) {
+            return false;
+        }
     }
 
-    return utrue;
+    return true;
 }
 
 UMDEF i32 usv_to_i32(usv v) {
@@ -632,7 +632,7 @@ UMDEF int usv_cmp(usv a, usv b) {
     return 0;
 }
 
-UMDEF ubool usv_eq(usv a, usv b) {
+UMDEF bool usv_eq(usv a, usv b) {
     return a.size == b.size && (usv_cmp(a, b) == 0);
 }
 
@@ -798,9 +798,9 @@ UMDEF void uar_destroy(uar *a) {
  */
 
 
-UMDEF ubool ulog_fprint(FILE *stream, ulog_level level, const char *msg) {
+UMDEF bool ulog_fprint(FILE *stream, ulog_level level, const char *msg) {
     if (!stream) {
-        return ufalse;
+        return false;
     }
 
 #ifndef ULOG_NO_COLORS
@@ -816,7 +816,7 @@ UMDEF ubool ulog_fprint(FILE *stream, ulog_level level, const char *msg) {
                 fprintf(stream, "\x1b[0;31m");
                 break;
             default:
-                return ufalse;
+                return false;
         }
     }
 #endif /* ULOG_NO_COLORS */
@@ -833,7 +833,7 @@ UMDEF ubool ulog_fprint(FILE *stream, ulog_level level, const char *msg) {
             fprintf(stream, "ERROR");
             break;
         default:
-            return ufalse;
+            return false;
     }
 
     fprintf(stream, "]: ");
@@ -843,25 +843,27 @@ UMDEF ubool ulog_fprint(FILE *stream, ulog_level level, const char *msg) {
     }
 
     fprintf(stream, "%s\n", msg);
-    return utrue;
+
+    return true;
 }
 
-UMDEF ubool ulog_print(ulog_level level, const char *msg) {
-    ubool res;
+UMDEF bool ulog_print(ulog_level level, const char *msg) {
+    bool res;
 
     res = ulog_fprint(ULOG_DEFAULT_STREAM, level, msg);
 
     return res;
 }
 
-UMDEF ubool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...) {
+UMDEF bool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...) {
+    bool res;
+
     va_list args, tmp_args;
     int len;
     char *buf;
-    ubool res;
 
     if (!stream) {
-        return ufalse;
+        return false;
     }
 
     va_start(args, fmt);
@@ -871,7 +873,7 @@ UMDEF ubool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...) {
     
     if (len < 0) {
         va_end(args);
-        return ufalse;
+        return false;
     }
 
     buf = (char *) UM_MALLOC((len + 1) * sizeof(char));
@@ -881,7 +883,7 @@ UMDEF ubool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...) {
     if (vsnprintf(buf, len + 1, fmt, args) < 0) {
         UM_FREE(buf);
         va_end(args);
-        return ufalse;
+        return false;
     }
 
     va_end(args);
@@ -893,11 +895,12 @@ UMDEF ubool ulog_fprintf(FILE *stream, ulog_level level, const char *fmt, ...) {
     return res;
 }
 
-UMDEF ubool ulog_printf(ulog_level level, const char *fmt, ...) {
+UMDEF bool ulog_printf(ulog_level level, const char *fmt, ...) {
+    bool res;
+
     va_list args, tmp_args;
     int len;
     char *buf;
-    ubool res;
 
     va_start(args, fmt);
     va_copy(tmp_args, args);
@@ -906,7 +909,7 @@ UMDEF ubool ulog_printf(ulog_level level, const char *fmt, ...) {
     
     if (len < 0) {
         va_end(args);
-        return ufalse;
+        return false;
     }
 
     buf = (char *) UM_MALLOC((len + 1) * sizeof(char));
@@ -916,7 +919,7 @@ UMDEF ubool ulog_printf(ulog_level level, const char *fmt, ...) {
     if (vsnprintf(buf, len + 1, fmt, args) < 0) {
         UM_FREE(buf);
         va_end(args);
-        return ufalse;
+        return false;
     }
 
     va_end(args);
